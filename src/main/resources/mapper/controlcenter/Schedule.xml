@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zpc.dao.controlcenter.ScheduleDao">
+
+    <!-- 根据taskId查询所有schedule -->
+    <select id="findAll" parameterType="long" resultType="Schedule">
+        SELECT schedule_id , task_id , start_time , end_time , dt ,
+               success_num , failed_num , request_num , data_num , surplus_number
+        FROM cloud_crawler_schedule WHERE task_id = #{taskId}
+    </select>
+
+    <!-- 新建调度 -->
+    <insert id="create" useGeneratedKeys="true" keyProperty="scheduleId" parameterType="Schedule">
+        insert into cloud_crawler_schedule(task_id , start_time , dt)
+        VALUE(#{taskId} , #{startTime} , #{dt});
+    </insert>
+
+    <!-- 更新任务结束时间 -->
+    <update id="setEnd">
+        UPDATE
+          cloud_crawler_schedule
+        SET
+          end_time = #{endTime}
+        WHERE
+          schedule_id = #{scheduleId};
+    </update>
+
+    <!-- 设置剩余队列数 -->
+    <update id="updateSurlpusNum">
+        UPDATE
+          cloud_crawler_schedule
+        SET
+          surplus_num = #{surplusNum}
+        WHERE
+          schedule_id = #{scheduleId};
+    </update>
+</mapper>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zpc.dao.controlcenter.TaskInfoDao">
+    <!-- 查询所有任务 -->
+    <select id="findAll" resultType="TaskInfo">
+        SELECT task_id , task_name , create_time , run_time , run_status
+         FROM cloud_crawler_task;
+    </select>
+
+    <!-- 根据id查找 -->
+    <select id="findById" parameterType="long" resultType="TaskInfo">
+      SELECT task_id , task_name , create_time , run_time , run_status
+      FROM cloud_crawler_task
+      WHERE task_id = #{taskId};
+    </select>
+
+    <!-- 根据名称查找 -->
+    <select id="findByName" parameterType="String" resultType="TaskInfo">
+        SELECT task_id , task_name , create_time , run_time , run_status
+        from cloud_crawler_task
+        WHERE task_name like concat('%' , #{taskName} , '%');
+    </select>
+
+    <!-- 新建任务 -->
+    <insert id="create">
+        insert into cloud_crawler_task(task_name , run_status) VALUE(#{taskName} , 0);
+    </insert>
+
+    <!-- 修改任务 -->
+    <update id="updateTaskInfo">
+        update
+          cloud_crawler_task
+        SET
+          task_name = #{taskName}
+        WHERE
+          task_id = #{taskId};
+    </update>
+
+    <!-- 删除任务 -->
+    <delete id="delete">
+        DELETE FROM cloud_crawler_task WHERE task_id = #{taskId};
+    </delete>
+
+    <!-- 更新运行时间 -->
+    <update id="updateRunTime">
+        update
+          cloud_crawler_task
+        SET
+          run_time = #{runTime}
+        WHERE
+          task_id = #{taskId};
+    </update>
+
+    <!-- 更新运行状态 -->
+    <update id="updateRunStatus">
+        update
+          cloud_crawler_task
+        SET
+          run_status = #{runStatus}
+        where
+          task_id = #{taskId};
+    </update>
+
+
+</mapper>
