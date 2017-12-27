@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * Created by 和谐社会人人有责 on 2017/12/20.
@@ -51,5 +52,24 @@ public class QueueController {
         return requests;
     }
 
+    /**
+     * url入队列
+     * @param orderMessage
+     */
+    @RequestMapping(value = "/put" , method = RequestMethod.POST , produces = {"application/json;charset=utf-8"})
+    @ResponseBody
+    public boolean put(OrderMessage orderMessage) {
+        String containerName = orderMessage.getContainerName();
+        try {
+            BlockingQueue<Request> blockingQueue = queue.getQueueMap().get(containerName);
+            if (blockingQueue != null) {
+                blockingQueue.put(orderMessage.getRequest());
+            }
+        } catch (InterruptedException e) {
+            logger.error(e.getMessage() , "url入队列失败" + orderMessage.toString());
+            return false;
+        }
+        return true;
+    }
 
 }
