@@ -93,17 +93,9 @@ public class MessageReceiver implements MessageListener {
                 // 操作数据库，设置任务运行状态为运行中
                 taskInfoDao.updateRunStatus(taskId , 1);
                 logger.info("任务运行状态设置为运行中,taskId : " + taskId);
-            } else if (TaskOrder.SUSPEND.equals(order)) {
-                // 暂停队列
-
             } else if (TaskOrder.STOP.equals(order)) {
                 // 删除队列
-                queue.getQueueMap().remove(queueName);
-                logger.info("已移除队列" + queueName);
-
-                taskInfoDao.updateRunStatus(taskId , 0);
-                logger.info("任务运行状态设置为已完成,taskId : " + taskId);
-
+                this.destroy(queueName , taskId);
             } else if (TaskOrder.REQUEST.equals(order)) {
                 // request入队列
                 BlockingQueue<Request> blockingQueue = queue.getQueueMap().get(orderMessage.getContainerName());
@@ -120,6 +112,9 @@ public class MessageReceiver implements MessageListener {
                 orderMessageToDownload.setContainerName(orderMessage.getContainerName());
                 sendMessage.sendDownMessage(orderMessageToDownload , RoutingKey.DOWNSERVICE_ROUTINGKEY);
                 logger.info("已通知下载服务器开始下载页面" + orderMessage.getContainerName());
+            } else if (ControlExecutorOrder.COMPLETE.equals(order)) {
+                // 任务已完成，销毁队列
+                this.destroy(queueName , taskId);
             }
         } catch (IOException e) {
             logger.error(e.getMessage() , "接收消息失败");
@@ -127,5 +122,20 @@ public class MessageReceiver implements MessageListener {
             logger.error(e.getMessage() , "接收消息失败");
         }
 
+    }
+
+    /**
+     * 销毁队列公共方法
+     * @param queueName
+     * @param taskId
+     */
+    public void destroy(String queueName , long taskId) {
+        // 删除队列
+        queue.getQueueMap().remove(queueName);
+        logger.info("已移除队列" + queueName);
+        // 立即进行垃圾回收，销毁该队列
+        System.gc();
+        taskInfoDao.updateRunStatus(taskId , 0);
+        logger.info("任务运行状态设置为已完成,taskId : " + taskId);
     }
 }

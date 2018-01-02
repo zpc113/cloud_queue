@@ -18,5 +18,7 @@ public class ControlExecutorOrder {
 
     public static final String DOWNLOAD = "download";   // 线程池初始化完成
 
+    public static final String COMPLETE = "complete";   // 任务完成指令
+
 
 }

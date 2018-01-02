@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by 和谐社会人人有责 on 2017/12/20.
@@ -37,18 +38,25 @@ public class QueueController {
         List<Request> requests = new ArrayList<Request>();
         for (int i = 0 ; i < 10 ; i ++) {
             try {
-                Request request = queue.getQueueMap().get(queueName.split("_scheduleId_")[0]).take();
+                // 取request，5秒超时
+                Request request = queue.getQueueMap().get(queueName.split("_scheduleId_")[0]).poll(5000 , TimeUnit.MILLISECONDS);
+                if (request == null) {
+                    // 没有取到
+                    continue;
+                }
                 requests.add(request);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
         // 通知下载服务器再次获取request
-        OrderMessage orderMessageToDownload = new OrderMessage();
-        orderMessageToDownload.setOrder(ControlExecutorOrder.DOWNLOAD);
-        orderMessageToDownload.setContainerName(queueName);
-        sendMessage.sendDownMessage(orderMessageToDownload , RoutingKey.DOWNSERVICE_ROUTINGKEY);
-        logger.info("已通知下载服务器开始下载页面" + queueName);
+        if (requests != null && requests.size() > 0) {
+            OrderMessage orderMessageToDownload = new OrderMessage();
+            orderMessageToDownload.setOrder(ControlExecutorOrder.DOWNLOAD);
+            orderMessageToDownload.setContainerName(queueName);
+            sendMessage.sendDownMessage(orderMessageToDownload , RoutingKey.DOWNSERVICE_ROUTINGKEY);
+            logger.info("已通知下载服务器开始下载页面" + queueName);
+        }
         return requests;
     }
 
