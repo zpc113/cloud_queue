@@ -38,4 +38,5 @@ public interface ScheduleDao {
      */
     void updateSurplusNum(@Param("surplusNum") long surplusNum ,@Param("scheduleId") long scheduleId);
 
+    Schedule getSchedule(@Param("taskId") long taskId);
 }

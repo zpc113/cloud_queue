@@ -137,5 +137,8 @@ public class MessageReceiver implements MessageListener {
         System.gc();
         taskInfoDao.updateRunStatus(taskId , 0);
         logger.info("任务运行状态设置为已完成,taskId : " + taskId);
+        // 设置调度已完成
+        Schedule schedule = scheduleDao.getSchedule(taskId);
+        scheduleDao.setEnd(new Date() , schedule.getScheduleId());
     }
 }
